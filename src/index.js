@@ -1,3 +1,6 @@
+import './pages/index.css';
+import { initialCards } from './scripts/cards';
+
 // @todo: Темплейт карточки
 const cardTemplate = document.querySelector("#card-template").content;
 
@@ -29,4 +32,4 @@ function deleteCard(event) {
 initialCards.forEach(cardInfo => {
     const createdCard = createCard(cardInfo, deleteCard);
     placesList.append(createdCard);
-    });   
+    });
