@@ -1,16 +1,55 @@
 import "./pages/index.css";
 import {initialCards} from "./scripts/initialCards.js";
-import {renderCards, addCardToList} from "./scripts/cards.js";
+import {
+    createCard,
+    handleLikeButtonClick,
+    handleDeleteButtonClick,
+} from "./scripts/card.js";
 import {openModal, closeModal} from "./scripts/modal.js";
 
 const modalTypeEdit = document.querySelector(".popup_type_edit");
 const modalTypeNewCard = document.querySelector(".popup_type_new-card");
+const modalTypeImage = document.querySelector(".popup_type_image");
+const modalTypeImageData = modalTypeImage.querySelector(".popup__image");
+const placesList = document.querySelector(".places__list");
 const editModalButton = document.querySelector(".profile__edit-button");
 const newItemModalButton = document.querySelector(".profile__add-button");
 const closeModalButtons = document.querySelectorAll(".popup__close");
 const nameInput = document.querySelector(".profile__title");
 const nameJob = document.querySelector(".profile__description");
 const editProfileForm = document.forms.edit__profile;
+
+const handleModalTypeImage = (evt) => {
+    const cardImage = evt.target.closest(".card__image");
+    if (cardImage) {
+        modalTypeImageData.src = cardImage.src;
+        modalTypeImageData.alt = cardImage.alt;
+        modalTypeImageData.textContent = cardImage.alt;
+        openModal(modalTypeImage);
+    }
+};
+
+const renderCards = (cards, method = "append") => {
+    cards.forEach((cardData) => {
+        const cardElement = createCard(
+            cardData,
+            handleDeleteButtonClick,
+            handleLikeButtonClick,
+            handleModalTypeImage
+        );
+        placesList[method](cardElement);
+    });
+};
+
+const addCardToList = (cardData, method = "prepend") => {
+    const cardElement = createCard(
+        cardData,
+        handleDeleteButtonClick,
+        handleLikeButtonClick,
+        handleModalTypeImage
+    );
+    placesList[method](cardElement);
+};
 
 const handleAddCardSubmit = (evt) => {
     evt.preventDefault();
