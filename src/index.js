@@ -7,6 +7,7 @@ import {
     patchUserData,
     fetchCards,
     postCard,
+    removeCard,
     patchUserAvatar,
 } from "./scripts/api.js";
 
