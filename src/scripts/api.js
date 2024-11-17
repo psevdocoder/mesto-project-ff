@@ -4,8 +4,7 @@ const config = {
         authorization: '38ec5425-9537-48f1-96fb-f3fa319e3758',
         'Content-Type': 'application/json'
     }
-}
-export let userID;
+};
 
 const request = (url, options) => {
     return fetch(url, options).then(checkResponse);
@@ -29,16 +28,7 @@ export const fetchUserData = () => {
     return request(`${config.baseUrl}users/me`, {
         method: "GET",
         headers: config.headers
-    }).then((res) => {
-        fetchUserId(res["_id"]);
-        return res;
     });
-};
-
-
-
-const fetchUserId = (id) => {
-    userID = id;
 };
 
 export const patchUserData = (userName, userAbout) => {
@@ -49,8 +39,6 @@ export const patchUserData = (userName, userAbout) => {
             name: userName,
             about: userAbout
         })
-    }).then((res) => {
-        return res;
     });
 };
 
@@ -62,9 +50,6 @@ export const postCard = (title, link) => {
             name: title,
             link: link
         })
-    }).then((res) => {
-        console.log(res)
-        return res;
     });
 };
 
@@ -72,20 +57,13 @@ export const removeCard = (cardId) => {
     return request(`${config.baseUrl}cards/${cardId}`, {
         method: 'DELETE',
         headers: config.headers
-    })
-        .then((res) => {
-            return res;
-        });
+    });
 };
-
 
 export const removeLike = (cardId) => {
     return request(`${config.baseUrl}cards/likes/${cardId}`, {
         method: 'DELETE',
         headers: config.headers
-    }).then((res) => {
-        console.log(res);
-        return res;
     });
 };
 
@@ -93,9 +71,6 @@ export const addLike = (cardId) => {
     return request(`${config.baseUrl}cards/likes/${cardId}`, {
         method: 'PUT',
         headers: config.headers
-    }).then((res) => {
-        console.log(res);
-        return res;
     });
 };
 

@@ -7,9 +7,6 @@ import {
     patchUserData,
     fetchCards,
     postCard,
-    removeCard,
-    removeLike,
-    addLike,
     patchUserAvatar,
 } from "./scripts/api.js";
 
@@ -38,6 +35,16 @@ const validationConfig = {
     errorClass: "popup__form__input-error_active",
 };
 
+let userID;
+
+const addButtonPreloader = (isLoading, evt) => {
+    if (isLoading) {
+        evt.submitter.textContent = "Сохранение...";
+    } else {
+        evt.submitter.textContent = "Сохранить";
+    }
+};
+
 const handleEditAvatarFormSubmit = (evt) => {
     evt.preventDefault();
 
@@ -47,23 +54,15 @@ const handleEditAvatarFormSubmit = (evt) => {
     patchUserAvatar(avatarLink)
         .then(() => {
             userAvatar.style["background-image"] = `url('${avatarLink}')`;
+            closeModal(modalTypeNewAvatar);
+            newAvatarForm.reset();
         })
         .catch((err) => {
             console.error("Произошла ошибка:", err);
         })
         .finally(() => {
             addButtonPreloader(false, evt);
-            closeModal(modalTypeNewAvatar);
-            newAvatarForm.reset;
         });
-};
-
-const addButtonPreloader = (isLoading, evt) => {
-    if (isLoading) {
-        evt.submitter.textContent = "Сохранение...";
-    } else {
-        evt.submitter.textContent = "Сохранить";
-    }
 };
 
 const handleEditFormSubmit = (evt) => {
@@ -75,42 +74,14 @@ const handleEditFormSubmit = (evt) => {
         .then((data) => {
             nameUser.textContent = data.name;
             nameJob.textContent = data.about;
-            editProfileForm.name.value = nameUser.textContent;
-            editProfileForm.description.value = nameJob.textContent;
+            closeModal(modalTypeEdit);
         })
         .catch((err) => {
             console.error("Произошла ошибка:", err);
         })
         .finally(() => {
             addButtonPreloader(false, evt);
-            closeModal(modalTypeEdit);
         });
-};
-
-const checkLikedOnCard = (
-    likeButton,
-    likeCount,
-    removeLike,
-    addLike,
-    cardId
-) => {
-    if (likeButton.classList.contains("card__like-button_is-active")) {
-        removeLike(cardId)
-            .then((data) => {
-                likeCount.textContent = data.likes.length;
-                likeButton.classList.remove("card__like-button_is-active");
-            })
-            .catch((err) => console.log(err));
-    } else {
-        addLike(cardId)
-            .then((data) => {
-                likeCount.textContent = data.likes.length;
-                likeButton.classList.add("card__like-button_is-active");
-            })
-            .catch((err) => {
-                console.error("Произошла ошибка:", err);
-            });
-    }
 };
 
 const handleAddCardSubmit = (evt) => {
@@ -132,20 +103,14 @@ const handleAddCardSubmit = (evt) => {
                 },
                 likes: card.likes || [],
             };
-            addCardToList(
-                cardData,
-                handleCardRemove,
-                handleModalTypeImage,
-                removeLike,
-                addLike,
-                checkLikedOnCard
-            );
-            addButtonPreloader(false, evt);
-            closeModal(modalTypeNewCard);
+            addCardToList(cardData);
             evt.target.reset();
+            closeModal(modalTypeNewCard);
         })
         .catch((err) => {
             console.error("Произошла ошибка:", err);
+        })
+        .finally(() => {
             addButtonPreloader(false, evt);
         });
 };
@@ -162,7 +127,7 @@ const handleModalTypeImage = (evt) => {
 };
 
 userAvatar.addEventListener("click", (evt) => {
-    newAvatarForm.reset;
+    newAvatarForm.reset();
     openModal(modalTypeNewAvatar);
     clearValidation(newAvatarForm, validationConfig);
 });
@@ -199,11 +164,9 @@ const renderCards = (cards) => {
 const addCardToList = (cardData) => {
     const cardElement = createCard(
         cardData,
+        userID,
         handleCardRemove,
-        handleModalTypeImage,
-        removeLike,
-        addLike,
-        checkLikedOnCard
+        handleModalTypeImage
     );
     placesList.prepend(cardElement);
 };
@@ -217,31 +180,22 @@ const handleCardRemove = (evt) => {
             card.remove();
         })
         .catch((err) => console.error("Произошла ошибка:", err));
-}
+};
 
-const getInitialCards = () => {
-    fetchCards()
-        .then((res) => {
-            renderCards(res);
-        })
-        .catch((err) => console.log(err));
-}
+const renderUserData = (data) => {
+    nameUser.textContent = data.name;
+    nameJob.textContent = data.about;
+    userAvatar.style["background-image"] = `url("${data.avatar}")`;
+    editProfileForm.name.value = data.name;
+    editProfileForm.description.value = data.about;
+};
 
-const renderUserData = () => {
-    fetchUserData()
-        .then((data) => {
-            nameUser.textContent = data.name;
-            nameJob.textContent = data.about;
-            userAvatar.style["background-image"] = `url("${data.avatar}")`;
-            editProfileForm.name.value = data.name;
-            editProfileForm.description.value = data.about;
-        })
-        .catch((err) => console.error("Произошла ошибка:", err));
-}
-
-const promises = [renderUserData, getInitialCards];
-Promise.all(promises)
-    .then((resArr) => resArr.forEach((res) => res()))
+Promise.all([fetchUserData(), fetchCards()])
+    .then(([userData, initialCards]) => {
+        userID = userData._id;
+        renderUserData(userData);
+        renderCards(initialCards);
+    })
     .catch((err) => console.error("Произошла ошибка:", err));
 
 enableValidation(validationConfig);
